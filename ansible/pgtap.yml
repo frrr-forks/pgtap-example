@@ -1,0 +1,30 @@
+---
+- hosts: postgresql
+  become: true
+
+  vars:
+    name: pgtap
+
+  tasks:
+    - name: install pgtap package
+      apt: name=postgresql-9.5-pgtap state=present
+
+    - name: create system user (for trust login)
+      user: name=pgtap shell=/bin/bash state=present
+
+    - name: create postgresql user
+      postgresql_user: name={{ item.name }} password={{ item.password }} role_attr_flags=LOGIN,CREATEDB,NOSUPERUSER
+      with_items:
+        - { name: "{{ name }}", password: "{{ name }}" }
+      become_user: postgres
+
+    - name: create postgresql database
+      postgresql_db: name={{ name }}
+                     owner={{ name }}
+                     encoding='UTF-8'
+                     template='template0'
+      become_user: postgres
+
+    - name: create postgresql extension
+      postgresql_ext: name=pgtap db={{ name }}
+      become_user: postgres

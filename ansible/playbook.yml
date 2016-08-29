@@ -1,0 +1,4 @@
+---
+- include: common.yml
+- include: postgresql.yml
+- include: pgtap.yml
